@@ -1,11 +1,5 @@
 name: Build on Windows, Linux and MacOS
 
-# Build on MacOS currently fails with the following error: 
-
-# ld: library 'crt0.o' not found
-# collect2: error: ld returned 1 exit status
-# make: *** [build_exe] Error 1
-
 on:
   workflow_dispatch:
 
@@ -54,8 +48,12 @@ jobs:
 
       - name: Call make
         run: |
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            export SDKROOT="$(xcrun --show-sdk-path)"
+          fi
           cd makefile
           make
+        shell: bash
 
       - name: Test executable
         run: |
