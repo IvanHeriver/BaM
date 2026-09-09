@@ -11,7 +11,7 @@ jobs:
     runs-on:  ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest, macos-15-intel]
+        os: [windows-latest, ubuntu-latest, macos-15, macos-15-intel]
         include:
           - os: windows-latest
             test_cmd: .\BaM.exe --version
@@ -19,7 +19,12 @@ jobs:
             test_cmd: ./BaM --version
           # macOS is built once per architecture; the two slices are combined
           # into a single universal binary by the `macos-universal` job below.
-          - os: macos-latest
+          # Both use a macOS 15 image on purpose: the SDK a slice is built
+          # against sets its minimum-OS stamp, so building the arm64 slice on
+          # macos-latest (macOS 26) would stamp it minos 26.0 and the universal
+          # binary would refuse to launch on Apple Silicon Macs running
+          # anything older than macOS 26.
+          - os: macos-15
             test_cmd: ./BaM --version
             slice: arm64
           - os: macos-15-intel
@@ -127,7 +132,7 @@ jobs:
   # out if more than one asset matches, so shipping two per-architecture zips
   # would break automatic download for every Mac user.
   macos-universal:
-    runs-on: macos-latest
+    runs-on: macos-15
     needs: build
     steps:
       - name: Download macOS slices
